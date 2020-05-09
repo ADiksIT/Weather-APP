@@ -1,19 +1,23 @@
 const api = {
   key: "93d1a0353b7c8ad9ac76dc7169e8b5f6",
   base: "https://api.openweathermap.org/data/2.5/"
-}
+};
 const searchbox = document.querySelector('.search-box'),
 temp = document.querySelector('.temp'),
 hiLow = document.querySelector('.hi-low'),
 city = document.querySelector('.city'),
-date = document.querySelector('.location .date');
+date = document.querySelector('.location .date'),
+main = document.querySelector('.main');
+//location = document.querySelector('.location');
 
 
 const dateBulder = (d) => {
-  let months = ["January",	"February","March",	"April", "May",	"June", "July",	"August",	
-              "September", "October",	"November",	"December"];
-  let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thurdsday", "Friday", "Saturday"];
-  let day = days[d.getDate()];
+  let months = ["January",	"February","March",	"April",
+                "May",	"June", "July",	"August",	
+                "September", "October",	"November",	"December"];
+  let days = ["Sunday", "Monday", "Tuesday", "Wednesday", 
+              "Thurdsday", "Friday", "Saturday"];
+  let day = days[d.getDay()];
   let date = d.getDate();
   let month = months[d.getMonth()];
   let year =  d.getFullYear();
@@ -21,9 +25,14 @@ const dateBulder = (d) => {
 };
 
 const displayResults = (weather) => {
-  console.log(weather)
-  temp.textContent = Math.floor(weather.main.temp) + '°c';
-  hiLow.textContent =  Math.floor(weather.main.temp_min) + '°c / ' + Math.floor(weather.main.temp_max) + ' °c';
+
+  const { temp_min : min, temp_max : max, temp : t } = weather.main;
+  console.log(weather);
+  temp.textContent = Math.floor(t) + '°c';
+
+  hiLow.textContent =  `${Math.floor(min)} °c /
+                        ${Math.floor(max)}  °c`;
+
   city.textContent = weather.name + ', ' + weather.sys.country;
   
 }
@@ -40,6 +49,8 @@ const getResponse = (query) => {
     });
 };
 const setQuery = (evt) => {
+  let card = '<div class="spinner></div>';
+  main.insertAdjacentHTML('beforebegin', card);
   if(evt.keyCode === 13)
     getResponse(searchbox.value);
 }
