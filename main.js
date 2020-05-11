@@ -3,15 +3,11 @@ const api = {
   base: "https://api.openweathermap.org/data/2.5/"
 };
 const searchbox = document.querySelector('.search-box'),
-temp = document.querySelector('.temp'),
-hiLow = document.querySelector('.hi-low'),
-city = document.querySelector('.city'),
-date = document.querySelector('.location .date'),
 main = document.querySelector('.main');
-//location = document.querySelector('.location');
 
 
-const dateBulder = (d) => {
+const dateBulder = () => {
+  let d = new Date();
   let months = ["January",	"February","March",	"April",
                 "May",	"June", "July",	"August",	
                 "September", "October",	"November",	"December"];
@@ -25,37 +21,62 @@ const dateBulder = (d) => {
 };
 
 const displayResults = (weather) => {
-
-  const { temp_min : min, temp_max : max, temp : t } = weather.main;
   console.log(weather);
-  temp.textContent = Math.floor(t) + '°c';
-
-  hiLow.textContent =  `${Math.floor(min)} °c /
-                        ${Math.floor(max)}  °c`;
-
-  city.textContent = weather.name + ', ' + weather.sys.country;
   
-}
+  const spinner = document.querySelector('.spinner');
+  spinner.remove();
+  const { temp_min : min, temp_max : max, temp : t } = weather.main;
+
+  const card = `
+    <section class="location">
+      <div class="city">${weather.name}, ${weather.sys.country}</div>
+      <div class="date">${dateBulder()}</div>
+    </section>
+    <div class="current">
+      <div class="temp">${Math.floor(t)}<span>°c</span></div>
+      <div class="weather">${weather.weather[0].main}</div>
+      <div class="description">${weather.weather[0].description}</div>
+      <div class="hi-low">${Math.floor(min)}°c / ${Math.floor(max)}°c</div>
+    </div>
+  `;
+  main.insertAdjacentHTML('beforeend', card);
+  
+};
+
 const getResponse = (query) => {
   fetch(`${api.base}weather?q=${query}&units=metric&appid=${api.key}`)
     .then(response => {
-      if(response.ok){
+      if(response.ok) {
         return response.json();
+      } else {
+        console.error(response.status);
       }
     })
     .then(displayResults)
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 };
+
+const getData = async (query) => {
+	const response = await fetch(`${api.base}weather?q=${query}&units=metric&appid=${api.key}`);
+	if (!response.ok) {
+    main.innerHTML = '<h2>Вы ввели нвеерный город попробуйте еще раз!!!</h2>';
+    throw new Error (`Cтатус ${response.status}`);
+  }
+	return await response.json();
+};
+
+
 const setQuery = (evt) => {
   let card = '<div class="spinner></div>';
-  main.insertAdjacentHTML('beforebegin', card);
-  if(evt.keyCode === 13)
-    getResponse(searchbox.value);
-}
+  if(evt.keyCode === 13) {
+    main.innerHTML = '<div class="spinner"></div>';
+    //getResponse(searchbox.value);
+    getData(searchbox.value).then(displayResults);
+  }
+  
+};
 
-let now = new Date();
-date.innerText = dateBulder(now);
 searchbox.addEventListener('keypress', setQuery);
 
